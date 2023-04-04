@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddStaticCompressionMiddleware(new StaticCompressionMiddleware.Options {
+  ServingPrefix = new PathString("/static"),
+  WebRoot = builder.Environment.WebRootPath,
+});
 builder.Services.AddResponseCompression(options =>
 {
   options.EnableForHttps = true;
@@ -15,9 +19,10 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<StaticCompressionMiddleware>();
 app.UseStaticFiles(new StaticFileOptions {
   // TODO: Enable serving pre-compressed.
-  RequestPath = "/static"
+  RequestPath = "/static",
 });
 
 app.MapControllers();
