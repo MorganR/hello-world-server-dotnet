@@ -13,7 +13,6 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
   options.Level = CompressionLevel.Optimal;
 });
 
-
 var app = builder.Build();
 
 app.UseStaticFiles(new StaticFileOptions {
@@ -21,8 +20,6 @@ app.UseStaticFiles(new StaticFileOptions {
   RequestPath = "/static"
 });
 
-app.UseRouting();
-app.MapControllerRoute("default", "{controller}/{action}");
-// TODO: Enable response compression for this route.
+app.MapControllers();
 
 app.Run();
