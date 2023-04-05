@@ -6,10 +6,10 @@ public class StaticCompressionMiddleware : IMiddleware
 {
   public record Options {
     public required PathString ServingPrefix = new PathString("/");
-    public required String WebRoot = "./wwwroot";
+    public required string WebRoot = "./wwwroot";
   }
 
-  private const String _BROTLI_ENCODING_HEADER = "br";
+  private const string _BROTLI_ENCODING_HEADER = "br";
 
   private static readonly FileExtensionContentTypeProvider _contentTypeProvider = new FileExtensionContentTypeProvider();
 
