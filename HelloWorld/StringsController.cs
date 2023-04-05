@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,36 +7,35 @@ using Microsoft.AspNetCore.Mvc;
 public class StringsController : Controller {
   private const int MAX_NAME_LENGTH = 500;
   [HttpGet("hello")]
-  public ActionResult<String> Hello(String? name) {
+  public ActionResult<string> Hello(string? name) {
     if (name is null || name == "")
     {
       return "Hello, world!";
     }
     if (name.Length > MAX_NAME_LENGTH)
     {
-      return new BadRequestResult();
+      return BadRequest();
     }
     return $"Hello, {name}!";
   }
 
   [HttpGet("async-hello")]
-  public async Task<ActionResult<String>> AsyncHello() {
+  public async Task<ActionResult<string>> AsyncHello() {
     await Task.Delay(TimeSpan.FromMilliseconds(15));
     return "Hello, world!";
   }
 
   [HttpGet("lines")]
-  public ActionResult<String> Lines(int? n) {
+  public ActionResult Lines(int? n) {
     int trueN = n ?? 0;
     if (trueN < 0) {
-      return new BadRequestResult();
+      return BadRequest();
     }
     var result = new StringBuilder("<ol>\n");
     for (int i = 1; i <= trueN; i++) {
       result.AppendLine($"  <li>Item number: {i}</li>");
     }
     result.Append("</ol>");
-    // TODO: Need to return this as text/html.
-    return result.ToString();
+    return base.Content(result.ToString(), MediaTypeNames.Text.Html, Encoding.UTF8);
   }
 }

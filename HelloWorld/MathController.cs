@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 [Route("/[controller]")]
 public class MathController : Controller {
   [HttpGet("power-reciprocals-alt")]
-  public ActionResult<String> PowerReciprocalsAlt(int? n) {
+  public ActionResult<string> PowerReciprocalsAlt(int? n) {
     if (n < 0)
     {
-      return new BadRequestResult();
+      return BadRequest();
     }
     int trueN = n ?? 0;
     double result = 0;
