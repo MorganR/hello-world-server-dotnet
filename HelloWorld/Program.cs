@@ -2,6 +2,7 @@ using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 builder.Services.AddControllers();
 builder.Services.AddStaticCompressionMiddleware(options => {
   options.ServingPrefix = new PathString("/static");
