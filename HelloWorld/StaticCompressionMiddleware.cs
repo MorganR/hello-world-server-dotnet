@@ -1,17 +1,30 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 
-/// <summary>Serves a precompressed file, if one exists for the requested resource.</summary>
+/// <summary>
+/// Terminal middleware that serves a precompressed file, if one exists for the requested resource.
+/// <para>This must be added before calling <c>app.UseStaticFiles(...)</c>.</para>
+/// </summary>
 public class StaticCompressionMiddleware : IMiddleware
 {
   public record Options {
+    /// <summary>The URL path prefix from which to host static files.</summary>
     public required PathString ServingPrefix = new PathString("/");
+    /// <summary>
+    /// The local path prefix from which to retrieve static files, i.e. ASP.NET's "web root".
+    /// </summary>
     public required string WebRoot = "./wwwroot";
   }
 
   private const string _BROTLI_ENCODING_HEADER = "br";
 
   private static readonly FileExtensionContentTypeProvider _contentTypeProvider = new FileExtensionContentTypeProvider();
+  private static readonly IReadOnlyCollection<string> _COMPRESSIBLE_MIME_TYPES = new List<string> {
+    "application/json",
+    "application/ld+json",
+    "application/xml",
+    "image/svg+xml",
+  };
 
   private readonly Options _options;
 
@@ -24,6 +37,7 @@ public class StaticCompressionMiddleware : IMiddleware
   {
     if (_IsStaticFileRequest(context) && await _TryServeCompressedFile(context))
     {
+      // Exit immediately if a precompressed file was successfully served.
       return;
     }
     await next.Invoke(context);
@@ -37,7 +51,7 @@ public class StaticCompressionMiddleware : IMiddleware
     var relativePath = context.Request.Path.Value!.Substring(_options.ServingPrefix.Value!.Length);
     string? contentType;
     if (!_contentTypeProvider.TryGetContentType(relativePath, out contentType)
-        || !contentType.StartsWith("text/")) {
+        || !_IsCompressibleContentType(contentType)) {
       return false;
     }
     var compressedPath = Path.Join(_options.WebRoot, relativePath + ".br");
@@ -55,6 +69,9 @@ public class StaticCompressionMiddleware : IMiddleware
 
   private static bool _AcceptsBrotli(HttpContext context) =>
     context.Request.Headers.AcceptEncoding.SelectMany(v => v!.Split(",")).Any(v => v.Trim() == _BROTLI_ENCODING_HEADER);
+
+  private static bool _IsCompressibleContentType(string contentType) =>
+    contentType.StartsWith("text/") || _COMPRESSIBLE_MIME_TYPES.Contains(contentType);
 }
 
 public static class AppServicesExtensions

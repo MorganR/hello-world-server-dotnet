@@ -1,8 +1,18 @@
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 
+var port = System.Environment.GetEnvironmentVariable("PORT");
+if (port is null) {
+  port = "8080";
+} else if (!int.TryParse(port, out _)) {
+  System.Console.Error.WriteLine($"PORT must be a valid integer, or unset. Received \"{port}\"");
+  Environment.Exit(1);
+}
+
+// Configure the web host.
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+// Configure services for dependency injection.
 builder.Services.AddControllers();
 builder.Services.AddStaticCompressionMiddleware(options => {
   options.ServingPrefix = new PathString("/static");
@@ -20,6 +30,7 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 
 var app = builder.Build();
 
+// Configure app routing (order matters).
 app.UseMiddleware<StaticCompressionMiddleware>();
 app.UseStaticFiles(new StaticFileOptions {
   RequestPath = "/static",

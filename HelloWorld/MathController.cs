@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 
 [Route("/[controller]")]
+/// <summary>Provides math endpoints.</summary>
 public class MathController : Controller {
+  /// <summary>Computes a convergent series with "n" terms.</summary>
   [HttpGet("power-reciprocals-alt")]
   public ActionResult<string> PowerReciprocalsAlt(int? n) {
     if (n < 0)
